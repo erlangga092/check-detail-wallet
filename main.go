@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
+
+	"github.com/alecthomas/kingpin"
 )
 
 /**
@@ -59,6 +62,11 @@ import (
 **/
 
 var URL = "https://cekrek.heirro.dev/api/check"
+var (
+	app              = kingpin.New("App", "Check Wallet")
+	argAccountBank   = app.Flag("bank", "Nama bank/wallet").Short('b').Required().String()
+	argAccountNumber = app.Flag("number", "Nomer akun").Short('n').Required().String()
+)
 
 type WalletDetailResult struct {
 	AccountNumber string `json:"accountNumber"`
@@ -73,9 +81,13 @@ type WalletResult struct {
 }
 
 func main() {
+	kingpin.MustParse(app.Parse(os.Args[1:]))
+	accountBank := *argAccountBank
+	accountNumber := *argAccountNumber
+
 	param := url.Values{}
-	param.Set("accountBank", "gopay")
-	param.Set("accountNumber", "085601927930")
+	param.Set("accountBank", accountBank)
+	param.Set("accountNumber", accountNumber)
 	payload := bytes.NewBufferString(param.Encode())
 
 	client := &http.Client{}
@@ -103,8 +115,8 @@ func main() {
 	}
 
 	for _, v := range walletResult.Data {
-		fmt.Println(v.AccountNumber)
-		fmt.Println(v.AccountName)
-		fmt.Println(v.AccountBank)
+		fmt.Printf("Number\t: %s\n", v.AccountNumber)
+		fmt.Printf("Name\t: %s\n", v.AccountName)
+		fmt.Printf("Bank\t: %s\n", v.AccountBank)
 	}
 }
